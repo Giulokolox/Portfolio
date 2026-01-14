@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Portfolio | Game Programmer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+<header class="hero">
+    <h1>Nome Cognome</h1>
+    <p>Game Programmer • Unity & Unreal Engine</p>
+</header>
+
+<main class="container">
+
+    <section>
+        <h2>Progetti</h2>
+
+        <!-- CARD -->
+        <div class="card">
+            <div class="card-header">
+                <h3>FPS Multiplayer - Unity</h3>
+                <span class="tag unity">Unity</span>
+            </div>
+            
+            <div class="media">
+                 <img src="media/ZombieApocalypse.gif" alt="Gameplay FPS Unity">
+            </div>
+
+            <p class="description">
+                FPS multiplayer con sistema di movimento custom, shooting e sincronizzazione base.
+            </p>
+
+            <button class="toggle" onclick="toggleCode(this)">
+                Mostra codice
+            </button>
+
+            <div class="code-box">
+<pre><code class="language-csharp">
+// PlayerMovement.cs
+using UnityEngine;
+
+public class PlayerMovement : MonoBehaviour {
+    public float speed = 5f;
+
+    void Update() {
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+
+        Vector3 dir = new Vector3(h, 0, v);
+        transform.Translate(dir * speed * Time.deltaTime);
+    }
+}
+</code></pre>
+            </div>
+        </div>
+
+        <!-- CARD -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Action RPG - Unreal Engine</h3>
+                <span class="tag unreal">Unreal</span>
+            </div>
+
+            <p class="description">
+                Sistema di combattimento action con Blueprint e C++.
+            </p>
+
+            <button class="toggle" onclick="toggleCode(this)">
+                Mostra codice
+            </button>
+
+            <div class="code-box">
+<pre><code class="language-cpp">
+// Pseudo Blueprint logic
+// Event BeginPlay
+// → Init Player Stats
+// → Bind Input
+//
+// Event Attack
+// → Play Animation
+// → Apply Damage
+</code></pre>
+            </div>
+        </div>
+
+    </section>
+
+    <section>
+        <h2>Contatti</h2>
+        <p>Email: tuoemail@email.com</p>
+        <p>GitHub: github.com/tuonome</p>
+        <p>LinkedIn: linkedin.com/in/tuonome</p>
+    </section>
+
+</main>
+
+<footer>
+    © 2026 - Game Programmer Portfolio
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

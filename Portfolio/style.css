@@ -1,0 +1,139 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Segoe UI", sans-serif;
+    background: #0f1117;
+    color: #eaeaea;
+}
+
+/* HERO */
+.hero {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #1f2933, #111827);
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+}
+
+.hero p {
+    color: #9ca3af;
+}
+
+/* CONTAINER */
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 30px 20px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    border-bottom: 2px solid #374151;
+    padding-bottom: 5px;
+}
+
+/* CARD */
+.card {
+    background: #111827;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* TAG */
+.tag {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.unity {
+    background: #2563eb;
+}
+
+.unreal {
+    background: #7c3aed;
+}
+
+.description {
+    margin: 15px 0;
+    color: #cbd5f5;
+}
+
+/* BUTTON */
+.toggle {
+    background: none;
+    border: 1px solid #374151;
+    color: #eaeaea;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.toggle:hover {
+    background: #1f2937;
+}
+
+/* CODE */
+.code-box {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    margin-top: 10px;
+}
+
+.code-box pre {
+    background: #0d1117;
+    padding: 15px;
+    border-radius: 8px;
+    color: #e6edf3;
+    overflow-x: auto;
+    font-family: Consolas, monospace;
+    font-size: 0.85rem;
+}
+
+/* FOOTER */
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #9ca3af;
+}
+
+/* MOBILE */
+@media (max-width: 600px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+}
+
+.media {
+    margin: 15px 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.media img,
+.media video {
+    width: 100%;
+    display: block;
+}
