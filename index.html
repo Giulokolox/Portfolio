@@ -16,91 +16,2102 @@
 
 <main class="container">
 
-    <section>
-        <h2>Progetti</h2>
+<div class="project-filters">
+    <button onclick="showProjects('unity')">Unity Projects</button>
+    <button onclick="showProjects('unreal')">Unreal Projects</button>
+    <button onclick="showProjects('c')">C Projects</button>
+</div>
+<!-- ================= UNITY PROJECTS ================= -->
+<section id="unity-projects">
+<h2>Unity Projects</h2>
 
-        <!-- CARD -->
-        <div class="card">
-            <div class="card-header">
-                <h3>FPS Multiplayer - Unity</h3>
-                <span class="tag unity">Unity</span>
-            </div>
-            
-            <div class="media">
-                 <img src="media/ZombieApocalypse.gif" alt="Gameplay FPS Unity">
-            </div>
+<!-- ZOMBIE APOCALYPSE -->
+<div class="card">
+    <div class="card-header">
+        <h3>ZombieApocalypse</h3>
+        <span class="tag unity">Unity</span>
+    </div>
+
+    <p class="project-summary">
+        FPS game focused on gameplay systems, enemies and player mechanics.
+    </p>
+
+    <div class="media">
+        <img src="media/ZombieApocalypse.gif">
+    </div>
+
+    <button class="toggle" onclick="toggleProject(this)">
+       Open Project
+    </button>
+
+    <div class="project-content">
+
+        <!-- PLAYER -->
+       <div class="sub-section">
+
+        <button class="toggle sub-toggle" onclick="toggleSubSection(this)">
+            Player
+        </button>
+
+        <div class="sub-inner">
+
+            <img src="media/player.gif" class="inline-media">
 
             <p class="description">
-                FPS multiplayer con sistema di movimento custom, shooting e sincronizzazione base.
+                Player movement and input handling system.
             </p>
 
-            <button class="toggle" onclick="toggleCode(this)">
-                Mostra codice
+            <button
+                class="toggle"
+                onclick="toggleCode(this)">
+                Show Code
             </button>
 
             <div class="code-box">
-<pre><code class="language-csharp">
-// PlayerMovement.cs
-using UnityEngine;
+                <pre><code class="language-csharp">
+[RequireComponent(typeof(CharacterController))]
+public class PlayerController : MonoBehaviour
+{
+    //animation management
+    public Animation DoorOpen; //door opening animation
 
-public class PlayerMovement : MonoBehaviour {
-    public float speed = 5f;
+    // player features
+    public float speed = 7.5f; // speed
+    public float jumpSpeed = 8.0f; // jump speed
+    public float gravity = 20.0f; // gravity
+    public Camera playerCamera; // Main Camera
+    public float lookSpeed = 2.0f; // speed look
+    public float lookXLimit = 60.0f; // speed look limit
+    public Texture2D cursorTexture; // Texture for the red dot
+    public float cursorSize = 16f; // Size of the red dot
+    public float maxHealth = 100; // maximum life
+    public float currentHealth; // current life during gameplay
 
-    void Update() {
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
+    // powerup status check
+    public bool isInvincible;
+    public bool isInvisible;
 
-        Vector3 dir = new Vector3(h, 0, v);
-        transform.Translate(dir * speed * Time.deltaTime);
+    private bool isHealing; // check if the player is healing
+    private bool isMoving = false; // check if the player is moving
+
+    //player movement management
+    CharacterController characterController;
+    Vector3 moveDirection = Vector3.zero;
+    Vector2 rotation = Vector2.zero;
+
+    //care management
+    private float timeForHealing = 0.2f;
+    //water
+    public int waterCounter = 0;
+    private float waterHeal = 20f;
+    //food
+    public int medikitCounter = 0;
+    private float foodHeal = 40f;
+
+    [HideInInspector]
+    public bool canMove = true; 
+
+    //score player
+    private PointsSystem points;
+    private GameObject pointsObject;
+
+    //management of various purchasable objects (power ups and zones)
+    private bool plusHealthCanBuy = true;
+    private bool PlusSpeedCanBuy = true;
+    public bool FastReloadingCanBuy = true;
+    public bool PlusDamageCanBuy = true;
+    public bool DoorOpenCanBuy = true;
+    public bool ElicopterCanBuy = true;
+
+    //Cost of the various powerups
+    private int plusHealthCost = 2500;
+    private int PlusSpeedCost = 2000;
+    private int FastReloadingCost = 3000;
+    private int PlusDamageCost = 5000;
+    private int DoorOpen1Cost = 2000;
+    private int ElicopterCost = 10000;
+
+    //Rocket shop
+    public bool rocketCanBuy = true;
+    private int rocketCost = 5000;
+    private int rocketAmmoCost = 2000;
+    public static event Action OnRocketAmmoBought;
+
+    //Shotgun shop
+    public bool ShotgunCanBuy = true;
+    private int ShotgunCost = 750;
+    private int ShotgunAmmoCost = 300;
+    public static event Action OnShotgunAmmoBought;
+
+    //AK47 shop
+    public bool aK47CanBuy = true;
+    private int aK47Cost = 3000;
+    private int aK47AmmoCost = 1000;
+    public static event Action OnAK47AmmoBought;
+
+    //SMG Shop
+    public bool SMGCanBuy = true;
+    private int SMGCost = 1500;
+    private int SMGAmmoCost = 600;
+    public static event Action OnSMGAmmoBought;
+
+    //Pistol shop
+    public bool PistolCanBuy = false;
+    private int PistolCost = 300;
+    private int PistolAmmoCost = 100;
+    public static event Action OnPistolAmmoBought;
+
+    //Change weapons image
+    [SerializeField] private Image gun1;
+    [SerializeField] private Image gun2;
+    [SerializeField] private Image gun3;
+    [SerializeField] private Sprite aK47Sprite;
+    [SerializeField] private Sprite shotgunSprite;
+    [SerializeField] private Sprite pistolSprite;
+    [SerializeField] private Sprite smgSprite;
+    [SerializeField] private Sprite rocketSprite;
+    private Color imageColor;
+
+    //round management
+    public int round = 1;
+    public int round2 = 0;
+    public int round3 = 0;
+    public int currentZone = 1; //current area to manage the various spawns
+
+    //ui 
+    [SerializeField] private TMP_Text healthText;
+    [SerializeField] private TMP_Text instructionText;
+    public TMP_Text roundText;
+
+    [SerializeField] private Image invincibility;
+    [SerializeField] private Image invisibility;
+
+    //PermaUPs
+    [SerializeField] private Image plusHealth;
+    [SerializeField] private Image fastReloading;
+    [SerializeField] private Image plusSpeed;
+    [SerializeField] private Image plusDamage;
+
+    public TMP_Text waterNumText;
+    public TMP_Text foodNumText;
+
+    //timer to buy ammo
+    private float refreshTime = 0.2f;
+    private bool canBuy = true;
+
+    private GameObject weaponObject;
+    private WeaponSwitch weapons;
+
+    private AudioManager audioManager;
+
+    void Start()
+    {
+        Time.timeScale = 1f;
+        audioManager = FindObjectOfType<AudioManager>();
+        audioManager.Play("EquipWeapon");
+        imageColor = gun1.color;
+        imageColor.a = 1f;
+
+        PistolCanBuy = false;
+
+        plusDamage.enabled = false;
+        plusHealth.enabled = false;
+        fastReloading.enabled = false;
+        plusSpeed.enabled = false;
+
+        currentHealth = maxHealth;
+        healthText.text = $"{currentHealth}";
+        instructionText.enabled = false;
+
+        characterController = GetComponent<CharacterController>();
+        rotation.y = transform.eulerAngles.y;
+
+        weaponObject = GameObject.FindGameObjectWithTag("Weapons");
+        weapons = weaponObject.GetComponent<WeaponSwitch>();
+
+        pointsObject = GameObject.FindGameObjectWithTag("Points");
+        points = pointsObject.GetComponent<PointsSystem>();
+
+        // Hide the mouse cursor
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        points.AddPoints(100000);
+    }
+
+    void Update()
+    {
+        this.gameObject.tag = "Player";
+
+        //camera and player movement
+        if (characterController.isGrounded)
+        {
+            Vector3 forward = transform.TransformDirection(Vector3.forward);
+            Vector3 right = transform.TransformDirection(Vector3.right);
+            float curSpeedX = speed * Input.GetAxis("Vertical");
+            float curSpeedY = speed * Input.GetAxis("Horizontal");
+            moveDirection = (forward * curSpeedX) + (right * curSpeedY);
+
+            if (curSpeedX != 0 || curSpeedY != 0)
+            {
+                if (!isMoving)
+                {
+                    audioManager.Play("PlayerFootStep");
+                    isMoving = true;
+                }
+            }
+            else
+            {
+                audioManager.Stop("PlayerFootStep");
+                isMoving = false;
+            }
+            if (Input.GetButton("Jump"))
+            {
+                audioManager.Play("PlayerJump");
+                moveDirection.y = jumpSpeed;
+            }
+
+
+        }
+
+        moveDirection.y -= gravity * Time.deltaTime;
+
+        characterController.Move(moveDirection * Time.deltaTime);
+
+        if (canMove)
+        {
+            if (Cursor.lockState == CursorLockMode.Locked)
+            {
+                rotation.y += Input.GetAxis("Mouse X") * lookSpeed;
+                rotation.x += -Input.GetAxis("Mouse Y") * lookSpeed;
+            }
+            rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
+            playerCamera.transform.localRotation = Quaternion.Euler(rotation.x, 0, 0);
+            transform.eulerAngles = new Vector2(0, rotation.y);
+        }
+
+        //water use
+        if (Input.GetKey(KeyCode.Q) && waterCounter > 0 && currentHealth < maxHealth)
+        {
+            UseWater();
+        }
+
+        //use of the medikit
+        if (Input.GetKey(KeyCode.F) && medikitCounter > 0 && currentHealth < maxHealth)
+        {
+            UseMedikit();
+        }
+
+        //check if power ups are active
+        if (isInvisible)
+        {
+            invisibility.enabled = true;
+        }
+        else
+        {
+            invisibility.enabled = false;
+        }
+
+        if (isInvincible)
+        {
+            invincibility.enabled = true;
+        }
+        else
+        {
+            invincibility.enabled = false;
+        }
+    }
+
+    //method for using water
+    public void UseWater()
+    {
+        if (isHealing == false)
+        {
+            audioManager.Play("DrinkWater");
+            isHealing = true;
+            waterCounter--;
+            Heal(waterHeal);
+            waterNumText.text = waterCounter.ToString();
+            Invoke("GetHealth", timeForHealing);
+        }
+
+    }
+
+    //method for using water
+    public void UseMedikit()
+    {
+        if (isHealing == false)
+        {
+            audioManager.Play("Bandage");
+            isHealing = true;
+            medikitCounter--;
+            Heal(foodHeal);
+            foodNumText.text = medikitCounter.ToString();
+            Invoke("GetHealth", timeForHealing);
+        }
+    }
+
+    public void GetHealth()
+    {
+        isHealing = false;
+    }
+
+    //eventi per i collezzionabili e per l'attivazione della terza zona dopo aver distrutto il muro
+    private void OnEnable()
+    {
+        Collectable.OnWaterCollected += OnCollectableWaterCollected;
+        Collectable.OnFoodCollected += OnCollectableFoodCollected;
+        RocketProjectile.OnWallDestroyed += ActivateThirdZone;
+    }
+
+    private void OnDisable()
+    {
+        Collectable.OnWaterCollected -= OnCollectableWaterCollected;
+        Collectable.OnFoodCollected -= OnCollectableFoodCollected;
+        RocketProjectile.OnWallDestroyed -= ActivateThirdZone;
+    }
+
+    public void ActivateThirdZone()
+    {
+        currentZone = 3;
+    }
+
+    public void OnCollectableWaterCollected()
+    {
+        waterCounter++;
+        waterNumText.text = waterCounter.ToString();
+    }
+
+    public void OnCollectableFoodCollected()
+    {
+        medikitCounter++;
+        foodNumText.text = medikitCounter.ToString();
+    }
+
+    //damage suffered
+    public void TakeDamage(int damage)
+    {
+        if (isInvincible == false)
+        {
+            // Reduces the player's health
+            currentHealth -= damage;
+            healthText.text = $"{currentHealth}";
+            if (currentHealth <= 0)
+            {
+                SceneManager.LoadScene("DeathUI");
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+            }
+            if (currentHealth <= 0)
+            {
+                AudioListener.pause = true;
+            }
+        }
+    }
+
+    //method of healing
+    public void Heal(float amount)
+    {
+        // Increases the player's life
+        currentHealth += amount;
+
+        if (currentHealth > maxHealth)
+        {
+            currentHealth = maxHealth;
+        }
+        healthText.text = $"{currentHealth}";
+    }
+
+    //central point
+    void OnGUI()
+    {
+        if (Cursor.lockState == CursorLockMode.Locked)
+        {
+            // Draw the red dot in the center of the screen
+            float centerX = Screen.width / 2;
+            float centerY = Screen.height / 2;
+            float halfSize = cursorSize / 2;
+            GUI.DrawTexture(new Rect(centerX - halfSize, centerY - halfSize, cursorSize, cursorSize), cursorTexture);
+        }
+
+    }
+
+    //collision management with various map objects
+    private void OnTriggerStay(Collider other)
+    {
+        //BUYABLE POWERUP
+        if (other.CompareTag("PlusHealth"))
+        {
+            if (plusHealthCanBuy)
+            {
+                //Powerup price text and button to press
+                instructionText.text = $"COST : {plusHealthCost}\n PRESS E TO BUY MORE HEALTH";
+                instructionText.enabled = true;
+                if (points.points >= plusHealthCost && Input.GetKey(KeyCode.E))
+                {
+                    audioManager.Play("PermaPowerUpPickUp");
+                    points.RemovePoints(plusHealthCost);
+                    plusHealthCanBuy = false;
+                    maxHealth += 50;
+                    currentHealth = maxHealth;
+                    healthText.text = $"{currentHealth}";
+                    plusHealth.enabled = true;
+                }
+            }
+
+            else
+            {
+                instructionText.enabled = true;
+                instructionText.text = $"YOU ALREADY HAVE IT";
+            }
+        }
+
+        if (other.CompareTag("FastReloading"))
+        {
+            if (FastReloadingCanBuy)
+            {
+                //Powerup price writing
+                instructionText.text = $"COST : {FastReloadingCost}\n PRESS E TO BUY FAST RELOADING";
+                instructionText.enabled = true;
+                if (points.points >= FastReloadingCost && Input.GetKey(KeyCode.E))
+                {
+                    audioManager.Play("PermaPowerUpPickUp");
+                    points.RemovePoints(FastReloadingCost);
+                    FastReloadingCanBuy = false;
+                    fastReloading.enabled = true;
+                }
+            }
+            else
+            {
+                instructionText.enabled = true;
+                instructionText.text = $"YOU ALREADY HAVE IT";
+            }
+        }
+
+        if (other.CompareTag("PlusSpeed"))
+        {
+            if (PlusSpeedCanBuy)
+            {
+                //Powerup price writing
+                instructionText.text = $"COST : {PlusSpeedCost}\n PRESS E TO BUY MORE SPEED";
+                instructionText.enabled = true;
+                if (points.points >= PlusSpeedCost && Input.GetKey(KeyCode.E))
+                {
+                    audioManager.Play("PermaPowerUpPickUp");
+                    points.RemovePoints(PlusSpeedCost);
+                    PlusSpeedCanBuy = false;
+                    speed += 3.5f;
+                    plusSpeed.enabled = true;
+                }
+            }
+
+            else
+            {
+                instructionText.enabled = true;
+                instructionText.text = $"YOU ALREADY HAVE IT";
+            }
+        }
+
+        if (other.CompareTag("PlusDamage"))
+        {
+            if (PlusDamageCanBuy)
+            {
+                //Powerup price writing
+                instructionText.text = $"COST : {PlusDamageCost}\n PRESS E TO BUY MORE DAMAGE";
+                instructionText.enabled = true;
+                if (points.points >= PlusDamageCost && Input.GetKey(KeyCode.E))
+                {
+                    audioManager.Play("PermaPowerUpPickUp");
+                    points.RemovePoints(PlusDamageCost);
+                    PlusDamageCanBuy = false;
+                    plusDamage.enabled = true;
+                }
+            }
+
+            else
+            {
+                instructionText.enabled = true;
+                instructionText.text = $"YOU ALREADY HAVE IT";
+            }
+        }
+
+        if (other.CompareTag("Door1"))
+        {
+            if (DoorOpenCanBuy)
+            {
+                instructionText.text = $"COST : {DoorOpen1Cost}\n PRESS E TO UNLOCK THE SECOND ZONE";
+                instructionText.enabled = true;
+                if (points.points >= DoorOpen1Cost && Input.GetKey(KeyCode.E))
+                {
+                    audioManager.Play("DoorOpen");
+                    currentZone = 2;
+                    DoorOpen.Play();
+                    points.RemovePoints(DoorOpen1Cost);
+                    DoorOpenCanBuy = false;
+                }
+            }
+            else
+            {
+                instructionText.enabled = true;
+                instructionText.enabled = false;
+            }
+        }
+
+ 
+
+
+
+        if (other.CompareTag("Elicopter"))
+        {
+            if (ElicopterCanBuy)
+            {
+                instructionText.text = $"COST : {ElicopterCost}\n PRESS E TO ESCAPE";
+                instructionText.enabled = true;
+                if (points.points >= ElicopterCost && Input.GetKey(KeyCode.E))
+                {
+                    points.RemovePoints(ElicopterCost);
+                    ElicopterCanBuy = false;
+
+                    AudioListener.pause = true;
+                    SceneManager.LoadScene("WinUI");
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
+                }
+            }
+            else
+            {
+                instructionText.enabled = true;
+                instructionText.enabled = false;
+            }
+        }
+
+        if (other.CompareTag("ShotgunShop"))
+        {
+            if (ShotgunCanBuy)
+            {
+                if (weapons.selectedWeapon == 0 && weapons.gun2 != 7)
+                {
+                    instructionText.text = "YOU NEED TO HANDLE A GUN";
+                    instructionText.enabled = true;
+                }
+                else
+                {
+                    instructionText.text = $"PRESS E TO BUY COST: {ShotgunCost}";
+                    instructionText.enabled = true;
+                    if (points.points >= ShotgunCost && Input.GetKey(KeyCode.E))
+                    {
+                        audioManager.Play("EquipWeapon");
+                        points.RemovePoints(ShotgunCost);
+                        ShotgunCanBuy = false;
+                        if (weapons.gun2 == 7)
+                        {
+                            weapons.gun2 = 4;
+                            weapons.selectedWeapon = 4;
+                            gun2.sprite = shotgunSprite;
+                            gun2.color = imageColor;
+                            imageColor.a = 0.5f;
+                            gun1.color = imageColor;
+                            gun3.color = imageColor;
+                            weapons.numAmmo.enabled = true;
+                        }
+                        else if (weapons.selectedWeapon == weapons.gun1)
+                        {
+                            if (weapons.gun1 == 1)
+                            {
+                                aK47CanBuy = true;
+                            }
+                            if (weapons.gun1 == 5)
+                            {
+                                SMGCanBuy = true;
+                            }
+                            if (weapons.gun1 == 3)
+                            {
+                                PistolCanBuy = true;
+                            }
+                            if (weapons.gun1 == 6)
+                            {
+                                rocketCanBuy = true;
+                            }
+                            weapons.gun1 = 4;
+                            weapons.selectedWeapon = 4;
+                            gun1.sprite = shotgunSprite;
+                        }
+                        else
+                        {
+                            if (weapons.gun2 == 1)
+                            {
+                                aK47CanBuy = true;
+                            }
+                            if (weapons.gun2 == 5)
+                            {
+                                SMGCanBuy = true;
+                            }
+                            if (weapons.gun2 == 3)
+                            {
+                                PistolCanBuy = true;
+                            }
+                            if (weapons.gun2 == 6)
+                            {
+                                rocketCanBuy = true;
+                            }
+                            weapons.gun2 = 4;
+                            weapons.selectedWeapon = 4;
+                            gun2.sprite = shotgunSprite;
+                        }
+                        canBuy = false;
+                        Invoke("Refresh", refreshTime);
+                    }
+                }
+            }
+
+            else
+            {
+                instructionText.enabled = true;
+                instructionText.text = $"PRESS E TO BUY AMMO COST: {ShotgunAmmoCost}";
+                if (points.points >= ShotgunAmmoCost && Input.GetKey(KeyCode.E) && canBuy)
+                {
+                    points.RemovePoints(ShotgunAmmoCost);
+                    OnShotgunAmmoBought?.Invoke();
+                    canBuy = false;
+                    Invoke("Refresh", refreshTime);
+                }
+            }
+        }
+
+        if (other.CompareTag("Ak47Shop"))
+        {
+            if (aK47CanBuy)
+            {
+                if (weapons.selectedWeapon == 0 && weapons.gun2 != 7)
+                {
+                    instructionText.text = "YOU NEED TO HANDLE A GUN";
+                    instructionText.enabled = true;
+                }
+                else
+                {
+                    instructionText.text = $"PRESS E TO BUY COST: {aK47Cost}";
+                    instructionText.enabled = true;
+                    if (points.points >= aK47Cost && Input.GetKey(KeyCode.E))
+                    {
+                        audioManager.Play("EquipWeapon");
+                        points.RemovePoints(aK47Cost);
+                        aK47CanBuy = false;
+
+                        if (weapons.gun2 == 7)
+                        {
+                            weapons.gun2 = 1;
+                            weapons.selectedWeapon = 1;
+                            gun2.sprite = aK47Sprite;
+                            gun2.color = imageColor;
+                            imageColor.a = 0.5f;
+                            gun1.color = imageColor;
+                            gun3.color = imageColor;
+                            weapons.numAmmo.enabled = true;
+                        }
+                        else if (weapons.selectedWeapon == weapons.gun1)
+                        {
+                            if (weapons.gun1 == 4)
+                            {
+                                ShotgunCanBuy = true;
+                            }
+                            if (weapons.gun1 == 5)
+                            {
+                                SMGCanBuy = true;
+                            }
+                            if (weapons.gun1 == 3)
+                            {
+                                PistolCanBuy = true;
+                            }
+                            if (weapons.gun1 == 6)
+                            {
+                                rocketCanBuy = true;
+                            }
+                            weapons.gun1 = 1;
+                            weapons.selectedWeapon = 1;
+                            gun1.sprite = aK47Sprite;
+                        }
+                        else
+                        {
+                            if (weapons.gun2 == 4)
+                            {
+                                ShotgunCanBuy = true;
+                            }
+                            if (weapons.gun2 == 5)
+                            {
+                                SMGCanBuy = true;
+                            }
+                            if (weapons.gun2 == 3)
+                            {
+                                PistolCanBuy = true;
+                            }
+                            if (weapons.gun2 == 6)
+                            {
+                                rocketCanBuy = true;
+                            }
+                            weapons.gun2 = 1;
+                            weapons.selectedWeapon = 1;
+                            gun2.sprite = aK47Sprite;
+                        }
+                        canBuy = false;
+                        Invoke("Refresh", refreshTime);
+                    }
+                }
+            }
+            else
+            {
+                instructionText.enabled = true;
+                instructionText.text = $"PRESS E TO BUY AMMO COST: {aK47AmmoCost}";
+                if (points.points >= aK47AmmoCost && Input.GetKey(KeyCode.E) && canBuy)
+                {
+                    points.RemovePoints(aK47AmmoCost);
+                    OnAK47AmmoBought?.Invoke();
+                    canBuy = false;
+                    Invoke("Refresh", refreshTime);
+                }
+            }
+        }
+
+        if (other.CompareTag("SMGShop"))
+        {
+            if (SMGCanBuy)
+            {
+                if (weapons.selectedWeapon == 0 && weapons.gun2 != 7)
+                {
+                    instructionText.text = "YOU NEED TO HANDLE A GUN";
+                    instructionText.enabled = true;
+                }
+                else
+                {
+                    instructionText.text = $"PRESS E TO BUY COST: {SMGCost}";
+                    instructionText.enabled = true;
+                    if (points.points >= SMGCost && Input.GetKey(KeyCode.E))
+                    {
+                        audioManager.Play("EquipWeapon");
+                        points.RemovePoints(SMGCost);
+                        SMGCanBuy = false;
+
+                        if (weapons.gun2 == 7)
+                        {
+                            weapons.gun2 = 5;
+                            weapons.selectedWeapon = 5;
+                            gun2.sprite = smgSprite;
+                            gun2.color = imageColor;
+                            imageColor.a = 0.5f;
+                            gun1.color = imageColor;
+                            gun3.color = imageColor;
+                            weapons.numAmmo.enabled = true;
+                        }
+                        else if (weapons.selectedWeapon == weapons.gun1)
+                        {
+                            if (weapons.gun1 == 4)
+                            {
+                                ShotgunCanBuy = true;
+                            }
+                            if (weapons.gun1 == 1)
+                            {
+                                aK47CanBuy = true;
+                            }
+                            if (weapons.gun1 == 3)
+                            {
+                                PistolCanBuy = true;
+                            }
+                            if (weapons.gun1 == 6)
+                            {
+                                rocketCanBuy = true;
+                            }
+                            weapons.gun1 = 5;
+                            weapons.selectedWeapon = 5;
+                            gun1.sprite = smgSprite;
+                        }
+                        else
+                        {
+                            if (weapons.gun2 == 4)
+                            {
+                                ShotgunCanBuy = true;
+                            }
+                            if (weapons.gun2 == 1)
+                            {
+                                aK47CanBuy = true;
+                            }
+                            if (weapons.gun2 == 3)
+                            {
+                                PistolCanBuy = true;
+                            }
+                            if (weapons.gun2 == 6)
+                            {
+                                rocketCanBuy = true;
+                            }
+                            weapons.gun2 = 5;
+                            weapons.selectedWeapon = 5;
+                            gun2.sprite = smgSprite;
+                        }
+                        canBuy = false;
+                        Invoke("Refresh", refreshTime);
+                    }
+                }
+            }
+            else
+            {
+                instructionText.enabled = true;
+                instructionText.text = $"PRESS E TO BUY AMMO COST: {SMGAmmoCost}";
+                if (points.points >= SMGAmmoCost && Input.GetKey(KeyCode.E) && canBuy)
+                {
+                    points.RemovePoints(SMGAmmoCost);
+                    OnSMGAmmoBought?.Invoke();
+                    canBuy = false;
+                    Invoke("Refresh", refreshTime);
+                }
+            }
+        }
+
+        if (other.CompareTag("PistolShop"))
+        {
+            if (PistolCanBuy)
+            {
+                if (weapons.selectedWeapon == 0 && weapons.gun2 != 7)
+                {
+                    instructionText.text = "YOU NEED TO HANDLE A GUN";
+                    instructionText.enabled = true;
+                }
+                else
+                {
+                    instructionText.text = $"PRESS E TO BUY COST: {PistolCost}";
+                    instructionText.enabled = true;
+                    if (points.points >= PistolCost && Input.GetKey(KeyCode.E))
+                    {
+                        audioManager.Play("EquipWeapon");
+                        points.RemovePoints(PistolCost);
+                        PistolCanBuy = false;
+
+                        if (weapons.gun2 == 7)
+                        {
+                            weapons.gun2 = 3;
+                            weapons.selectedWeapon = 3;
+                            gun2.sprite = pistolSprite;
+                            gun2.color = imageColor;
+                            imageColor.a = 0.5f;
+                            gun1.color = imageColor;
+                            gun3.color = imageColor;
+                            weapons.numAmmo.enabled = true;
+                        }
+                        else if (weapons.selectedWeapon == weapons.gun1)
+                        {
+                            if (weapons.gun1 == 4)
+                            {
+                                ShotgunCanBuy = true;
+                            }
+                            if (weapons.gun1 == 1)
+                            {
+                                aK47CanBuy = true;
+                            }
+                            if (weapons.gun1 == 5)
+                            {
+                                SMGCanBuy = true;
+                            }
+                            if (weapons.gun1 == 6)
+                            {
+                                rocketCanBuy = true;
+                            }
+                            weapons.gun1 = 3;
+                            weapons.selectedWeapon = 3;
+                            gun1.sprite = pistolSprite;
+                        }
+                        else
+                        {
+                            if (weapons.gun2 == 4)
+                            {
+                                ShotgunCanBuy = true;
+                            }
+                            if (weapons.gun2 == 1)
+                            {
+                                aK47CanBuy = true;
+                            }
+                            if (weapons.gun2 == 5)
+                            {
+                                SMGCanBuy = true;
+                            }
+                            if (weapons.gun2 == 6)
+                            {
+                                rocketCanBuy = true;
+                            }
+                            weapons.gun2 = 3;
+                            weapons.selectedWeapon = 3;
+                            gun2.sprite = pistolSprite;
+                        }
+                        canBuy = false;
+                        Invoke("Refresh", refreshTime);
+                    }
+                }
+            }
+            else
+            {
+                instructionText.enabled = true;
+                instructionText.text = $"PRESS E TO BUY AMMO COST: {PistolAmmoCost}";
+                if (points.points >= PistolAmmoCost && Input.GetKey(KeyCode.E) && canBuy)
+                {
+                    audioManager.Play("EquipWeapon");
+                    points.RemovePoints(PistolAmmoCost);
+                    OnPistolAmmoBought?.Invoke();
+                    canBuy = false;
+                    Invoke("Refresh", refreshTime);
+                }
+            }
+        }
+
+        if (other.CompareTag("RocketShop"))
+        {
+            if (rocketCanBuy)
+            {
+                if (weapons.selectedWeapon == 0 && weapons.gun2 != 7)
+                {
+                    instructionText.text = "YOU NEED TO HANDLE A GUN";
+                    instructionText.enabled = true;
+                }
+                else
+                {
+                    instructionText.text = $"PRESS E TO BUY COST: {rocketCost}";
+                    instructionText.enabled = true;
+                    if (points.points >= rocketCost && Input.GetKey(KeyCode.E))
+                    {
+                        audioManager.Play("EquipWeapon");
+                        points.RemovePoints(rocketCost);
+                        rocketCanBuy = false;
+
+                        if (weapons.gun2 == 7)
+                        {
+                            weapons.gun2 = 6;
+                            weapons.selectedWeapon = 6;
+                            gun2.sprite = rocketSprite;
+                            gun2.color = imageColor;
+                            imageColor.a = 0.5f;
+                            gun1.color = imageColor;
+                            gun3.color = imageColor;
+                            weapons.numAmmo.enabled = true;
+                        }
+                        else if (weapons.selectedWeapon == weapons.gun1)
+                        {
+                            if (weapons.gun1 == 4)
+                            {
+                                ShotgunCanBuy = true;
+                            }
+                            if (weapons.gun1 == 1)
+                            {
+                                aK47CanBuy = true;
+                            }
+                            if (weapons.gun1 == 5)
+                            {
+                                SMGCanBuy = true;
+                            }
+                            if (weapons.gun1 == 3)
+                            {
+                                PistolCanBuy = true;
+                            }
+                            weapons.gun1 = 6;
+                            weapons.selectedWeapon = 6;
+                            gun1.sprite = rocketSprite;
+                        }
+                        else
+                        {
+                            if (weapons.gun2 == 4)
+                            {
+                                ShotgunCanBuy = true;
+                            }
+                            if (weapons.gun2 == 1)
+                            {
+                                aK47CanBuy = true;
+                            }
+                            if (weapons.gun2 == 5)
+                            {
+                                SMGCanBuy = true;
+                            }
+                            if (weapons.gun2 == 3)
+                            {
+                                PistolCanBuy = true;
+                            }
+                            weapons.gun2 = 6;
+                            weapons.selectedWeapon = 6;
+                            gun2.sprite = rocketSprite;
+                        }
+                        canBuy = false;
+                        Invoke("Refresh", refreshTime);
+                    }
+                }
+            }
+            else
+            {
+                instructionText.enabled = true;
+                instructionText.text = $"PRESS E TO BUY AMMO COST: {rocketAmmoCost}";
+                if (points.points >= rocketAmmoCost && Input.GetKey(KeyCode.E) && canBuy)
+                {
+                    points.RemovePoints(rocketAmmoCost);
+                    OnRocketAmmoBought?.Invoke();
+                    canBuy = false;
+                    Invoke("Refresh", refreshTime);
+                }
+            }
+        }
+    }
+
+    private void Refresh()
+    {
+        canBuy = true;
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        instructionText.enabled = false;
     }
 }
-</code></pre>
+                </code></pre>
             </div>
         </div>
+    </div>
+        <!-- ENEMY AI -->
+        <div class="sub-section">
 
-        <!-- CARD -->
-        <div class="card">
-            <div class="card-header">
-                <h3>Action RPG - Unreal Engine</h3>
-                <span class="tag unreal">Unreal</span>
-            </div>
+            <button class="toggle sub-toggle" onclick="toggleSubSection(this)">
+              Enemy AI
+            </button>
+
+        <div class="sub-inner">
+
+            <img src="media/player.gif" class="inline-media">
 
             <p class="description">
-                Sistema di combattimento action con Blueprint e C++.
+                Enemy AI Movemnt 
             </p>
 
-            <button class="toggle" onclick="toggleCode(this)">
-                Mostra codice
+            <button
+                class="toggle"
+                onclick="toggleCode(this)"
+                data-open="Show Code"
+                data-close="Hide Code">
+                Show Code
             </button>
 
             <div class="code-box">
-<pre><code class="language-cpp">
-// Pseudo Blueprint logic
-// Event BeginPlay
-// → Init Player Stats
-// → Bind Input
-//
-// Event Attack
-// → Play Animation
-// → Apply Damage
-</code></pre>
+                 <pre><code class="language-csharp">
+public class EnemyIA : MonoBehaviour
+{
+    //animations and audio
+    public AudioClip EnemyDeath;
+    private AudioSource audioSource;
+    private Animator zombieAnimator;
+
+    public string playerTag; //tag player
+
+    //characteristics of the enemy
+    public float movementSpeed;
+    public float maxHealth;
+    public int damageAmount;
+    private float hitTimer = 0f;
+    public float maxHitTime;
+
+    private GameObject playerObject;
+    private Transform playerTransform;
+    private NavMeshAgent agent;
+    [HideInInspector] public float currentHealth;
+
+    private PlayerController player;
+
+    private bool IsChasingEnemy;
+
+    private float standardConverterDuration = 10f;
+    private float converterDuration;
+
+    //data point management
+    private PointsSystem points;
+    private GameObject pointsObject;
+    public int deathPoints;
+    public int allyPoints;
+
+    //loot
+    public GameObject aKAmmo;
+    public GameObject pistolAmmo;
+    public GameObject medikit;
+    public GameObject water;
+    public GameObject powerUp;
+    public GameObject shotgunAmmo;
+    public GameObject smgAmmo;
+    public GameObject rocketAmmo;
+
+    //Ammo lootable
+    private GameObject weaponObject;
+    private WeaponSwitch weapons;
+
+    private bool isDead = false;
+    private bool isDisabled = false;
+
+    private NavMeshObstacle obstacle;
+
+    public static event Action OnEnemyKilled;
+    public static event Action OnBossKilled;
+
+    [SerializeField] private ParticleSystem blood;
+    [SerializeField] private TMP_Text allyText;
+
+    private bool invisible = false;
+
+    private void Start()
+    {
+        audioSource= GetComponent<AudioSource>();    
+        zombieAnimator = GetComponent<Animator>();
+
+        blood.Stop();
+
+        playerObject = GameObject.FindGameObjectWithTag(playerTag);
+        playerTransform = playerObject.transform;
+        player = playerObject.GetComponent<PlayerController>();
+
+        //points system
+        pointsObject = GameObject.FindGameObjectWithTag("Points");
+        points = pointsObject.GetComponent<PointsSystem>();
+
+        //Ammo lootable
+        weaponObject = GameObject.FindGameObjectWithTag("Weapons");
+        weapons = weaponObject.GetComponent<WeaponSwitch>();
+
+        //zombie power-up management after a certain number of rounds
+        if (player.round % 3 == 0)
+        {
+            player.round3 = player.round / 3;
+
+        }
+
+        if (player.round % 2 == 0)
+        {
+            player.round2 = player.round / 2;
+        }
+
+        if (player.round2 != 0)
+        {
+            maxHealth = maxHealth + (10 * player.round2);
+        }
+
+        if (player.round3 != 0)
+        {
+            movementSpeed = movementSpeed + (0.1f * player.round3);
+            damageAmount = damageAmount + (5 * player.round3);
+        }
+
+        currentHealth = maxHealth;
+        //navmesh
+        agent = GetComponent<NavMeshAgent>();
+        obstacle = GetComponent<NavMeshObstacle>();
+        agent.speed = movementSpeed;
+
+        converterDuration = standardConverterDuration;
+
+        // if the ally is following the enemy
+        IsChasingEnemy = false;
+    }
+
+    private void Update()
+    {
+        if (isDead || isDisabled)
+            return;
+
+        //whether it is an enemy or a boss
+        if (CompareTag("Enemy") || CompareTag("Boss"))
+        {
+            allyText.enabled = false;
+            if (playerObject != null)
+            {
+                Vector3 playerPosition = playerTransform.position;
+
+                if (CanSeePlayer(playerObject))
+                {
+                    zombieAnimator.SetBool("IsMoving", true);
+                    invisible = false;
+                    agent.isStopped = false;
+                    agent.SetDestination(playerPosition);
+                    obstacle.enabled = true;
+                }
+                else
+                {
+                    zombieAnimator.SetBool("IsMoving", false);
+                    invisible = true;
+                    agent.isStopped = true;
+                    obstacle.enabled = false;
+                    agent.SetDestination(transform.position);
+                }
+            }
+        }
+        //if it's an ally set the target to an enemy
+        else
+        {
+            allyText.enabled = true;
+            agent.speed = movementSpeed * 2f;
+            if (!IsChasingEnemy)
+            {                
+                converterDuration = standardConverterDuration;
+                playerObject = GameObject.FindGameObjectWithTag("Enemy");
+                IsChasingEnemy = true;
+
+            }
+
+            if (playerObject != null)
+            {
+                if (!playerObject.CompareTag("Enemy"))
+                {
+                    playerObject = GameObject.FindGameObjectWithTag("Enemy");
+                }
+            }
+
+            if (playerObject == null)
+            {
+                if (GameObject.FindGameObjectWithTag("Enemy"))
+                {
+                    playerObject = GameObject.FindGameObjectWithTag("Enemy");
+                }
+                else
+                {
+                    OnEnemyKilled?.Invoke();
+                    StartCoroutine(DestroyEnemy());
+                }
+            }
+
+            else
+            {
+                playerTransform = playerObject.transform;
+                Vector3 playerPosition = playerTransform.position;
+                agent.SetDestination(playerPosition);
+                agent.isStopped = false;
+
+                converterDuration -= Time.deltaTime;
+                if (converterDuration <= 0)
+                {
+                    playerObject = GameObject.FindGameObjectWithTag("Player");
+                    playerTransform = playerObject.transform;
+                    gameObject.tag = "Enemy";
+                    agent.speed = 1;
+                }
+            }
+        }
+    }
+
+    //check if the player does not have invisibility
+    private bool CanSeePlayer(GameObject playerObject)
+    {
+        if (playerObject != null)
+        {
+            if (!player.isInvisible)
+            {
+                Renderer playerRenderer = playerObject.GetComponent<Renderer>();
+                if (playerRenderer != null && playerRenderer.isVisible && isDead == false)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (isDead || isDisabled || invisible)
+            return;
+
+        if (gameObject.CompareTag("Enemy") || gameObject.CompareTag("Boss"))
+        {
+            if (collision.gameObject.CompareTag(playerTag))
+            {
+                if (hitTimer <= 0)
+                {
+                    // Deals damage to the player
+                    PlayerController playerHealth = collision.gameObject.GetComponent<PlayerController>();
+                    if (playerHealth != null)
+                    {
+                        playerHealth.TakeDamage(damageAmount);
+                        zombieAnimator.SetTrigger("Attack");
+                    }
+                    hitTimer = maxHitTime;
+                }
+                else
+                {
+                    hitTimer -= Time.deltaTime;
+                }
+            }
+        }
+
+        else if (gameObject.CompareTag("Ally"))
+        {
+            if (collision.gameObject.CompareTag("Enemy"))
+            {
+                agent.speed = movementSpeed * 2f;
+                EnemyIA enemy = collision.gameObject.GetComponent<EnemyIA>();
+                if (hitTimer <= 0)
+                {
+                    // Deals damage to ally
+                    if (enemy.currentHealth >= 0)
+                    {
+                        enemy.TakeDamage(damageAmount * 5, allyPoints);
+                        zombieAnimator.SetTrigger("Attack");
+                    }
+                    hitTimer = maxHitTime;
+                }
+                else
+                {
+                    hitTimer -= Time.deltaTime;
+                }
+            }
+        }
+    }
+
+    //Drop percentages when the zombie dies
+    private void DropLoot()
+    {
+        int random = UnityEngine.Random.Range(1, 101);
+        Vector3 lootPosition = transform.position + new Vector3(0,1,0);
+        if (random <= 15)
+        {
+            if (weapons.gun1 == 1 || weapons.gun2 == 1)
+            {
+                Instantiate(aKAmmo, lootPosition, Quaternion.identity);
+            }
+        }
+        else if (random <= 30)
+        {
+            if (weapons.gun1 == 3 || weapons.gun2 == 3)
+            {
+                Instantiate(pistolAmmo, lootPosition, Quaternion.identity);
+            }
+        }
+        else if (random <= 45)
+        {
+            if (weapons.gun1 == 4 || weapons.gun2 == 4)
+            {
+                Instantiate(shotgunAmmo, lootPosition, Quaternion.identity);
+            }
+        }
+        else if (random <= 60)
+        {
+            if (weapons.gun1 == 5 || weapons.gun2 == 5)
+            {
+                Instantiate(smgAmmo, lootPosition, Quaternion.identity);
+            }
+        }
+        else if (random <= 70)
+        {
+            if (weapons.gun1 == 6 || weapons.gun2 == 6)
+            {
+                Instantiate(rocketAmmo, lootPosition, Quaternion.identity);
+            }
+        }
+        else if (random <= 85)
+        {
+            Instantiate(water, lootPosition, Quaternion.identity);
+        }
+        else if (random <= 94)
+        {
+            Instantiate(medikit, lootPosition, Quaternion.identity);
+        }
+        else if (random <= 100)
+        {
+            Instantiate(powerUp, lootPosition, Quaternion.identity);
+        }
+    }
+
+    //damage to the enemy
+    public void TakeDamage(int damage, int hitPoints)
+    {
+        // Reduces enemy AI health
+        if (gameObject.CompareTag("Enemy") || gameObject.CompareTag("Boss") || gameObject.CompareTag("Death"))
+        {
+            currentHealth -= damage;
+
+            blood.Play();
+
+            points.AddPoints(hitPoints);
+            if (currentHealth <= 0 && !isDead)
+            {
+                if (gameObject.CompareTag("Enemy"))
+                {
+                    OnEnemyKilled?.Invoke();
+                }
+                else if (gameObject.CompareTag("Boss"))
+                {
+                    OnBossKilled?.Invoke();
+                }
+                StartCoroutine(DestroyEnemy());
+              //  audioSource.Play();
+            }
+        }
+    }
+
+    //death of the enemy
+    IEnumerator DestroyEnemy()
+    {
+        if (isDead == false)
+        {
+            audioSource.clip = EnemyDeath;
+            audioSource.loop= false;
+            audioSource.Play();
+
+            isDead = true;
+            this.gameObject.tag = "Death";
+            agent.isStopped = true;
+            obstacle.enabled = false;
+            agent.SetDestination(transform.position);
+
+            DropLoot();
+            points.AddPoints(deathPoints);
+          
+            GetComponent<MeshRenderer>().enabled = false;
+            GetComponent<Collider>().enabled = false;
+
+            zombieAnimator.SetTrigger("Death");
+
+            yield return new WaitForSeconds(4f);
+
+            Destroy(gameObject);
+        }
+
+    }
+}
+                </code></pre>
+            </div>
+        </div>
+    </div>
+
+        <!-- ENEMY SPAWNER -->
+        <div class="sub-section">
+            <button class="toggle sub-toggle" onclick="toggleSubSection(this)">
+              Enemy Spawner
+            </button>
+
+        <div class="sub-inner">
+
+            <img src="media/player.gif" class="inline-media">
+
+            <p class="description">
+                Spawner Enemy
+            </p>
+
+            <button
+                class="toggle"
+                onclick="toggleCode(this)"
+                data-open="Show Code"
+                data-close="Hide Code">
+                Show Code
+            </button>
+
+            <div class="code-box">
+                 <pre><code class="language-csharp">
+public class EnemySpawner : MonoBehaviour
+{
+    public GameObject[] enemyPrefabs; // Enemy prefab to spawn
+    public GameObject boss;
+    public float spawnInterval = 3f; // Spawn interval between one enemy and another
+    private int maxEnemies; // Maximum number of enemies that can be present at the same time
+    public Transform[] spawnPoints1; // Array of enemy spawn points
+    public Transform[] spawnPoints2;
+    public Transform[] spawnPoints3;
+    private int randomZone;
+    private Transform spawnPoint;
+
+
+    private bool canSpawn = true;
+
+    private int currentEnemiesKilled; // Number of enemies currently present
+    private int currentEnemiesRound;
+
+    private int maxBoss;
+    private int currentMaxBoss;
+    private int currentBoss;
+    private int currentBossKilled;
+
+    //Player
+    private GameObject playerObject;
+    private PlayerController player;
+
+    private void Start()
+    {
+       
+        playerObject = GameObject.FindGameObjectWithTag("Player");
+        player = playerObject.GetComponent<PlayerController>();
+
+        player.roundText.text = $"ROUND: {player.round}";
+        // Initializes the current enemy count to zero
+        currentEnemiesKilled = 0;
+        maxEnemies = 5;
+
+        maxBoss = 0;
+        currentBoss = 0;
+        currentBossKilled = 0;
+        currentMaxBoss = 0;
+    }
+
+    //Spawn point management based on unlocked areas
+    private void Update()
+    {
+
+        if (canSpawn && currentBoss < currentMaxBoss)
+        {
+            if (player.currentZone == 2)
+            {
+                randomZone = Random.Range(0, 2);
+            }
+            else if (player.currentZone == 3)
+            {
+                randomZone = Random.Range(0, 3);
+            }
+            StartCoroutine(SpawnBoss());
+        }
+
+        if (canSpawn && currentEnemiesRound < maxEnemies)
+        {
+            if (player.currentZone == 2)
+            {
+                randomZone = Random.Range(0, 2);
+            }
+            else if (player.currentZone == 3)
+            {
+                randomZone = Random.Range(0, 3);
+            }
+            StartCoroutine(SpawnEnemie());
+        }
+
+        //I check if all the zombies in the round are dead and move on to the next round
+        if (currentEnemiesKilled >= maxEnemies && currentBossKilled >= currentMaxBoss)
+        {
+            player.round++;
+            player.roundText.text = $"ROUND: {player.round}";
+            maxEnemies += 5;
+            currentEnemiesKilled = 0;
+            currentEnemiesRound = 0;
+            currentBoss = 0;
+            currentBossKilled = 0;
+            currentMaxBoss = 0;
+            if (player.round % 4 == 0)
+            {
+                maxBoss++;
+                currentMaxBoss = maxBoss;   
+            }
+        }
+    }
+
+
+    private IEnumerator SpawnBoss()
+    {
+        if (player.currentZone == 1)
+        {
+            spawnPoint = spawnPoints1[Random.Range(0, spawnPoints1.Length)];
+            canSpawn = false;
+            currentBoss++;
+        }
+        else if (player.currentZone == 2)
+        {
+            if (randomZone == 0)
+            {
+                spawnPoint = spawnPoints1[Random.Range(0, spawnPoints1.Length)];
+            }
+            else
+            {
+                spawnPoint = spawnPoints2[Random.Range(0, spawnPoints2.Length)];
+            }
+            canSpawn = false;
+            currentBoss++;
+        }
+        else if (player.currentZone == 3)
+        {
+            if (randomZone == 0)
+            {
+                spawnPoint = spawnPoints1[Random.Range(0, spawnPoints1.Length)];
+            }
+            else if (randomZone == 1)
+            {
+                spawnPoint = spawnPoints2[Random.Range(0, spawnPoints2.Length)];
+            }
+            else
+            {
+                spawnPoint = spawnPoints3[Random.Range(0, spawnPoints3.Length)];
+            }
+            canSpawn = false;
+            currentBoss++;
+        }
+
+        // Create a new enemy using the chosen prefab
+        GameObject newBoss = Instantiate(boss, spawnPoint.position, spawnPoint.rotation);
+
+        // Wait for spawn interval before running a new cycle
+        yield return new WaitForSeconds(spawnInterval);
+        canSpawn = true;
+    }
+ 
+    private IEnumerator SpawnEnemie()
+    {
+
+        // If the current number of enemies is less than the maximum limit
+        // Randomly choose a spawn point
+        if (player.currentZone == 1)
+        {
+            spawnPoint = spawnPoints1[Random.Range(0, spawnPoints1.Length)];
+            canSpawn = false;
+            currentEnemiesRound++;
+        }
+        else if(player.currentZone == 2)
+        {
+            if (randomZone == 0)
+            {
+                spawnPoint = spawnPoints1[Random.Range(0, spawnPoints1.Length)];
+            }
+            else
+            {
+                spawnPoint = spawnPoints2[Random.Range(0, spawnPoints2.Length)];
+            }
+            canSpawn = false;
+            currentEnemiesRound++;
+        }
+        else if (player.currentZone == 3)
+        {
+            if (randomZone == 0)
+            {
+                spawnPoint = spawnPoints1[Random.Range(0, spawnPoints1.Length)];
+            }
+            else if (randomZone == 1)
+            {
+                spawnPoint = spawnPoints2[Random.Range(0, spawnPoints2.Length)];
+            }
+            else
+            {
+                spawnPoint = spawnPoints3[Random.Range(0, spawnPoints3.Length)];
+            }
+            canSpawn = false;
+            currentEnemiesRound++;
+        }
+
+        //Randomly choose an enemy prefab
+        GameObject enemyPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+
+        // Create a new enemy using the chosen prefab
+        GameObject newEnemy = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
+
+        // Wait for spawn interval before running a new cycle
+        yield return new WaitForSeconds(spawnInterval);
+        canSpawn = true;
+    }
+
+    //enemy death event management
+    private void OnEnable()
+    {
+        EnemyIA.OnEnemyKilled += OnEnemyKill;
+        EnemyIA.OnBossKilled += OnBossKill;
+    }
+
+    private void OnDisable()
+    {
+        EnemyIA.OnEnemyKilled -= OnEnemyKill;
+        EnemyIA.OnBossKilled -= OnBossKill;
+    }
+
+    private void OnEnemyKill()
+    {
+        currentEnemiesKilled++;
+    }
+
+    private void OnBossKill()
+    {
+        currentBossKilled++;
+    }
+}
+                </code></pre>
+            </div>
+        </div>
+    </div>
+        <!-- COLLECTABLE -->
+        <div class="sub-section">
+            <button class="toggle sub-toggle" onclick="toggleSubSection(this)">
+              Collectable
+            </button>
+
+        <div class="sub-inner">
+
+            <img src="media/player.gif" class="inline-media">
+
+            <p class="description">
+               Collectable
+            </p>
+
+            <button
+                class="toggle"
+                onclick="toggleCode(this)"
+                data-open="Show Code"
+                data-close="Hide Code">
+                Show Code
+            </button>
+
+            <div class="code-box">
+                 <pre><code class="language-csharp">
+public class Collectable : MonoBehaviour
+{
+    //events called to the collection
+    public static event Action OnWaterCollected;
+    public static event Action OnAkAmmoCollected;
+    public static event Action OnFoodCollected;
+    public static event Action OnPistolAmmoCollected;
+    public static event Action OnShotgunAmmoCollected;
+    public static event Action OnSMGAmmoCollected;
+    public static event Action OnRocketAmmoCollected;
+
+    private AudioManager audioManager;
+
+    private void Start()
+    {
+        audioManager = FindObjectOfType<AudioManager>();
+    }
+    void Update()
+    {
+        transform.localRotation = Quaternion.Euler(90f, Time.time * 100, 0);
+
+        if (this.CompareTag("Water") || this.CompareTag("ShotgunUI") || this.CompareTag("AK47UI") || this.CompareTag("SMGUI") || this.CompareTag("PistolUI") || this.CompareTag("RocketUI"))
+        {
+            transform.localRotation = Quaternion.Euler(0f, Time.time * 100, 0);
+        }
+
+        if (this.CompareTag("SMGAmmo"))
+        {
+            transform.localRotation = Quaternion.Euler(-90f, Time.time * 100, 0);
+        }
+    }
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            if (this.CompareTag("Water"))
+            {
+                audioManager.Play("DrinkWater");
+                OnWaterCollected?.Invoke();
+            }
+
+            if (this.CompareTag("AKAmmo"))
+            {
+                audioManager.Play("PickUpAmmo");
+                OnAkAmmoCollected?.Invoke();
+            }
+
+            if (this.CompareTag("PistolAmmo"))
+            {
+                audioManager.Play("PickUpAmmo");
+                OnPistolAmmoCollected?.Invoke();
+            }
+
+            if (this.CompareTag("ShotgunAmmo"))
+            {
+                audioManager.Play("PickUpAmmo");
+                OnShotgunAmmoCollected?.Invoke();
+            }
+
+            if (this.CompareTag("SMGAmmo"))
+            {
+                audioManager.Play("PickUpAmmo");
+                OnSMGAmmoCollected?.Invoke();
+            }
+
+            if (this.CompareTag("RocketAmmo"))
+            {
+                audioManager.Play("PickUpAmmo");
+                OnRocketAmmoCollected?.Invoke();
+            }
+
+            if (this.CompareTag("Medikit"))
+            {
+                audioManager.Play("Bandage");
+                OnFoodCollected?.Invoke();
+            }
+            Destroy(gameObject);
+        }
+    }
+}
+            </code></pre>
+            </div>
+        </div>
+    </div>
+        <!-- POWER UP -->
+        <button class="toggle sub-toggle" onclick="toggleSubSection(this)">
+              Power Up
+            </button>
+
+        <div class="sub-inner">
+
+            <img src="media/player.gif" class="inline-media">
+
+            <p class="description">
+                Power Up
+            </p>
+
+            <button
+                class="toggle"
+                onclick="toggleCode(this)"
+                data-open="Show Code"
+                data-close="Hide Code">
+                Show Code
+            </button>
+
+            <div class="code-box">
+                 <pre><code class="language-csharp">
+public class RandomUP : MonoBehaviour
+{
+    //event management with respect to the type of power up collected
+    public static event Action OnMinigunCollected;
+    public static event Action OnConverterCollected;
+
+    public float duration; //powerup duration
+
+    //collision check with the player
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            StartCoroutine(Pickup(other));
+        }
+    }
+
+    //activate a random power up upon collection
+    IEnumerator Pickup(Collider player)
+    {
+        FindObjectOfType<AudioManager>().Play("pickUpPowerUp");
+        PlayerController powerUp = player.GetComponent<PlayerController>();
+        int random = UnityEngine.Random.Range(0, 4);
+
+        GetComponent<MeshRenderer>().enabled = false;
+        GetComponent<Collider>().enabled = false;
+
+
+        if (random == 0)
+        {           
+            powerUp.isInvisible = true;
+            Debug.Log("Invisible");
+
+            yield return new WaitForSeconds(duration);
+
+            powerUp.isInvisible = false;
+        }
+        else if (random == 1)
+        {            
+            powerUp.isInvincible = true;
+            Debug.Log("INVINCIBLE");
+
+            yield return new WaitForSeconds(duration);
+
+            powerUp.isInvincible = false;
+
+        }
+        else if (random == 2) 
+        {
+            Debug.Log("Minigun");
+            OnMinigunCollected?.Invoke();
+        }
+
+        else if(random == 3)
+        {
+            Debug.Log("Converter");
+            OnConverterCollected?.Invoke();
+        }
+        
+        Destroy(gameObject);
+    }
+}
+                </code></pre>
             </div>
         </div>
 
-    </section>
+        <!-- BOSS -->
+        <div class="sub-section">
+            <button class="toggle sub-toggle" onclick="toggleSubSection(this)">
+              Boss
+            </button>
 
-    <section>
-        <h2>Contatti</h2>
-        <p>Email: tuoemail@email.com</p>
-        <p>GitHub: github.com/tuonome</p>
-        <p>LinkedIn: linkedin.com/in/tuonome</p>
-    </section>
+        <div class="sub-inner">
+
+            <img src="media/player.gif" class="inline-media">
+
+            <p class="description">
+                Boss AI
+            </p>
+
+            <button
+                class="toggle"
+                onclick="toggleCode(this)"
+                data-open="Show Code"
+                data-close="Hide Code">
+                Show Code
+            </button>
+
+            <div class="code-box">
+                 <pre><code class="language-csharp">
+public class BossBar : MonoBehaviour
+{
+    public EnemyIA boss;
+    public Image fillBossBar;
+    private Slider bossHealthSlider;
+
+    private void Start()
+    {
+        bossHealthSlider = GetComponent<Slider>();
+    }
+
+    private void Update()
+    {
+        if (bossHealthSlider.value <= bossHealthSlider.minValue)
+        {
+            fillBossBar.enabled = false;
+        }
+
+        else if (bossHealthSlider.value > bossHealthSlider.minValue && !fillBossBar.enabled)
+        {
+            fillBossBar.enabled = true;
+        }
+
+        float fillValue = boss.currentHealth / boss.maxHealth;
+
+        bossHealthSlider.value = fillValue;
+
+        if (boss.currentHealth <= boss.maxHealth / 4)
+        {
+            fillBossBar.color = Color.red;
+
+        }
+        else if (boss.currentHealth <= boss.maxHealth / 2)
+        {
+            fillBossBar.color = Color.yellow;
+        }
+        else
+        {
+            fillBossBar.color = Color.green;
+        }
+    }
+}
+            </code></pre>
+          </div>
+     </div>
+    </div>
+  </div>
+</div>
+<!-- MAZE EXPLORER -->
+<div class="card">
+    <div class="card-header">
+        <h3>MazeExplorer</h3>
+        <span class="tag unity">Unity</span>
+    </div>
+
+    <p class="project-summary">
+        Simple procedural maze game focused on maze generation algorithms.
+    </p>
+
+    <button class="toggle" onclick="toggleSection(this)">Open Project</button>
+
+    <div class="sub-content">
+        <div class="sub-section">
+            <button class="toggle" onclick="toggleSection(this)">Maze Generator</button>
+            <div class="sub-content">
+<pre><code class="language-csharp">
+// MazeGenerator.cs
+</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+</section>
+
+<!-- ================= UNREAL PROJECTS ================= -->
+<section id="unreal-projects" style="display:none">
+<h2>Unreal Engine Projects</h2>
+
+<!-- IMPORTANT UNREAL PROJECT -->
+<div class="card highlight">
+    <div class="card-header">
+        <h3>Main Unreal Project (WIP)</h3>
+        <span class="tag unreal">Unreal</span>
+    </div>
+
+    <p class="project-summary">
+        Personal Unreal project focused on advanced gameplay systems. Code will be released later.
+    </p>
+
+    <div class="media">
+        <video src="media/unreal_main.mp4" autoplay muted loop></video>
+    </div>
+
+    <p class="note">Code not public yet.</p>
+</div>
+
+<!-- SCHOOL C++ AI PROJECT -->
+<div class="card school">
+    <div class="card-header">
+        <h3>Enemy AI Movement (C++ - School Project)</h3>
+        <span class="tag unreal">Unreal</span>
+    </div>
+
+    <div class="media">
+        <img src="media/unreal_ai.gif">
+    </div>
+
+<pre><code class="language-cpp">
+// EnemyAI.cpp
+</code></pre>
+</div>
+
+<!-- BLUEPRINT MARIO -->
+<div class="card school">
+    <div class="card-header">
+        <h3>Mario-like Platformer (Blueprint)</h3>
+        <span class="tag unreal">Unreal</span>
+    </div>
+
+    <div class="media">
+        <img src="media/mario_gameplay1.gif">
+        <img src="media/mario_gameplay2.gif">
+        <img src="media/mario_blueprint.png">
+    </div>
+
+    <p class="description">
+        Jump-on-enemies mechanic implemented with Blueprint.
+    </p>
+</div>
+
+</section>
+
+<!-- ================= C PROJECTS ================= -->
+<section id="c-projects" style="display:none">
+<h2>C Projects</h2>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Tetris in C</h3>
+        <span class="tag c">C</span>
+    </div>
+
+    <div class="media">
+        <img src="media/tetris.gif">
+    </div>
+
+<pre><code class="language-c">
+// Game loop
+while (running) {
+    update();
+    render();
+}
+</code></pre>
+</div>
+
+</section>
+
+<!-- ================= CONTACTS ================= -->
+<section>
+    <h2>Contacts</h2>
+    <p>Email: tuoemail@email.com</p>
+    <p>GitHub: github.com/tuonome</p>
+    <p>LinkedIn: linkedin.com/in/tuonome</p>
+</section>
 
 </main>
 
 <footer>
     © 2026 - Game Programmer Portfolio
 </footer>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
 <script src="script.js"></script>

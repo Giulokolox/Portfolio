@@ -94,22 +94,24 @@ h2 {
 
 /* CODE */
 .code-box {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease;
+    display: none;          /*  CHIUSA DI DEFAULT */
     margin-top: 10px;
 }
+
+.code-box.open {
+    display: block;         /* SI APRE SOLO SE .open */
+}
+
 
 .code-box pre {
     background: #0d1117;
     padding: 15px;
     border-radius: 8px;
-    color: #e6edf3;
-    overflow-x: auto;
     font-family: Consolas, monospace;
     font-size: 0.85rem;
+    max-height: 600px;  
+    overflow-x: auto;
 }
-
 /* FOOTER */
 footer {
     text-align: center;
@@ -136,4 +138,66 @@ footer {
 .media video {
     width: 100%;
     display: block;
+}
+
+.project-summary {
+    margin: 10px 0 15px;
+    color: #d1d5db;
+    font-style: italic;
+}
+
+/* .sub-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+} */
+.project-content,
+.sub-inner{
+    display: none;
+    margin-top: 15px;
+}
+/* quando aperti */
+.project-content.open,
+.sub-inner.open {
+    display: block;
+}
+.sub-toggle {
+    margin-top: 15px;
+}
+.sub-section {
+    margin-top: 15px;
+}
+.highlight {
+    border: 2px solid #7c3aed;
+}
+
+.school {
+    opacity: 0.85;
+}
+
+.c {
+    background: #16a34a;
+}
+
+.note {
+    color: #facc15;
+    font-size: 0.85rem;
+}
+
+.project-filters button {
+    margin-right: 10px;
+    opacity: 0.6;
+}
+
+.project-filters button.active {
+    opacity: 1;
+    border-bottom: 2px solid #7c3aed;
+}
+
+.inline-media {
+    width: 100%;
+    max-width: 600px;
+    display: block;
+    margin: 10px 0;
+    border-radius: 10px;
 }
