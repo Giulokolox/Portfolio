@@ -179,6 +179,14 @@ footer {
     background: #16a34a;
 }
 
+.csharp {
+    background: #0ea5e9; /* blu C# */
+}
+
+.cpp {
+    background: #6366f1;   /* viola/blu elegante */
+}
+
 .note {
     color: #facc15;
     font-size: 0.85rem;
