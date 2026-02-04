@@ -127,13 +127,25 @@ function toggleCode(button) {
 }
 
 // ================= FILTRI =================
+// function showProjects(type) {
+//     const sections = ["unity", "unreal", "c"];
+//     sections.forEach(section => {
+//         const el = document.getElementById(`${section}-projects`);
+//         const btn = document.querySelector(
+//             `.project-filters button[onclick*="${section}"]`
+//         );
+
+//         if (el) el.style.display = section === type ? "block" : "none";
+//         if (btn) btn.classList.toggle("active", section === type);
+//     });
+// }
+
 function showProjects(type) {
     const sections = ["unity", "unreal", "c"];
+    
     sections.forEach(section => {
         const el = document.getElementById(`${section}-projects`);
-        const btn = document.querySelector(
-            `.project-filters button[onclick*="${section}"]`
-        );
+        const btn = document.querySelector(`.project-filters button[data-type="${section}"]`);
 
         if (el) el.style.display = section === type ? "block" : "none";
         if (btn) btn.classList.toggle("active", section === type);

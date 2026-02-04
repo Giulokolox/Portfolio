@@ -217,3 +217,116 @@ footer {
     margin: 10px 0;
     border-radius: 10px;
 }
+/* HOME HERO */
+.hero-home {
+    padding: 80px 20px;
+}
+
+.hero-content {
+    max-width: 900px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+.hero-text h1 {
+    font-size: 2.8rem;
+}
+
+.subtitle {
+    color: #9ca3af;
+    font-size: 1.1rem;
+    margin-top: 10px;
+}
+
+/* FOTO PROFILO */
+.profile-pic {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #374151;
+}
+
+/* ABOUT */
+.about p {
+    margin-bottom: 15px;
+    color: #d1d5db;
+}
+
+/* BOTTONI HOME */
+.home-actions {
+    margin-top: 40px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.home-button {
+    padding: 14px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.home-button:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.home-button.primary {
+    background: #2563eb;
+    color: white;
+}
+
+.home-button.secondary {
+    background: #7c3aed;
+    color: white;
+}
+
+/* MOBILE */
+@media (max-width: 700px) {
+    .hero-content {
+        flex-direction: column-reverse;
+        text-align: center;
+    }
+}
+
+/* PROJECT FILTERS */
+.project-filters {
+    margin-bottom: 25px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.project-filters button {
+    background: #111827;
+    border: 1px solid #374151;
+    color: #e5e7eb;
+    padding: 10px 18px;
+    border-radius: 999px; /* pill style */
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 
+        background 0.2s ease,
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+/* hover */
+.project-filters button:hover {
+    background: #1f2937;
+    transform: translateY(-1px);
+}
+
+/* active */
+.project-filters button.active {
+    opacity: 1;
+    border-color: #7c3aed;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: white;
+}
