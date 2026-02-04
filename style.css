@@ -183,8 +183,16 @@ footer {
     background: #0ea5e9; /* blu C# */
 }
 
-.cpp {
-    background: #6366f1;   /* viola/blu elegante */
+.tag.cpp {
+    background: #a5b4fc;     /* molto più chiaro */
+    color: #0f1117;          /* testo scuro = contrasto forte */
+    font-weight: 600;
+}
+
+.tag.blueprint {
+    background: #facc15;    /* giallo Blueprint */
+    color: #1f2937;         /* testo scuro */
+    font-weight: 600;
 }
 
 .note {

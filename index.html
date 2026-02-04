@@ -2005,7 +2005,7 @@ public class BossBar : MonoBehaviour
 
     <div class="project-content">
 
-        <!-- PLAYER -->
+        <!-- MAZE EXPLORER -->
        <div class="sub-section">
 
         <button class="toggle sub-toggle" onclick="toggleSubSection(this)">
@@ -2191,34 +2191,310 @@ public class MazeGenerator : MonoBehaviour
     <div class="card-header">
         <h3>Enemy AI Movement (C++ - School Project)</h3>
         <div>
-            <span class="tag unreal-cpp">C++</span>
+            <span class="tag cpp">C++</span>
             <span class="tag unreal">Unreal</span>
         </div>
     </div>
 
+     <p class="project-summary">
+       Enemy AI
+    </p>
+
     <div class="media">
-        <img src="media/unreal_ai.gif">
+        <img src="media/EnemyAIC.gif">
     </div>
 
-<pre><code class="language-cpp">
-// EnemyAI.cpp
-</code></pre>
+    <button class="toggle" onclick="toggleProject(this)">
+       Open Project
+    </button>
+
+    <div class="project-content">
+
+        <!-- EnemyAI -->
+       <div class="sub-section">
+
+        <button class="toggle sub-toggle" onclick="toggleSubSection(this)">
+            EnemyAI and BallsScript
+        </button>
+
+        <div class="sub-inner">
+
+            <p class="description">
+                EnemyAI and BallsScript
+            </p>
+
+            <button
+                class="toggle"
+                onclick="toggleCode(this)">
+                Show Code
+            </button>
+
+            <div class="code-box">
+                <pre><code class="language-cpp">
+                void AEnemyAIController::BeginPlay()
+{
+    Super::BeginPlay();
+
+    if (UseBlackboard(BlackboardData, BlackboardComponent))
+    {
+        BlackboardComponent->SetValueAsObject(PlayerKey, GetWorld()->GetFirstPlayerController()->GetPawn());
+    }
+
+    GoToPlayer = MakeShared<FAivState>(
+        [this](AAIController* AIController) {
+            APawn* PlayerPawn = Cast<APawn>(BlackboardComponent->GetValueAsObject(PlayerKey));
+            AIController->MoveToActor(PlayerPawn, 100.0f);
+        },
+        nullptr,
+        [this](AAIController* AIController, const float DeltaTime) -> TSharedPtr<FAivState> {
+            EPathFollowingStatus::Type State = AIController->GetMoveStatus();
+
+            if (State == EPathFollowingStatus::Moving)
+            {
+                return nullptr;
+            }
+            AActor* BestBall = Cast<AActor>(BlackboardComponent->GetValueAsObject(BestBallKey));
+
+            if (!BestBall->IsAttachedTo(AIController->GetPawn()))
+            {
+                return SearchForBall;
+            }
+            if (BestBall)
+            {
+                APawn* PlayerPawn = Cast<APawn>(BlackboardComponent->GetValueAsObject(PlayerKey));
+                EPathFollowingRequestResult::Type MoveResult = AIController->MoveToActor(PlayerPawn, 100.0f);
+                if (MoveResult == EPathFollowingRequestResult::AlreadyAtGoal)
+                {
+                    BestBall->AttachToActor(AIController->GetWorld()->GetFirstPlayerController()->GetPawn(), FAttachmentTransformRules::KeepRelativeTransform);
+                    BestBall->SetActorRelativeLocation(FVector(0, 0, 0));
+                    BestBall = nullptr;
+                }
+                else
+                {
+                    return nullptr;
+                }
+            }
+            return SearchForBall;
+        }
+    );
+
+    SearchForBall = MakeShared<FAivState>(
+        [this](AAIController* AIController) {
+            AGameModeBase* GameMode = AIController->GetWorld()->GetAuthGameMode();
+            AABallsGameGameMode* AIGameMode = Cast<AABallsGameGameMode>(GameMode);
+            const TArray<ABall*>& BallsList = AIGameMode->GetBalls();
+
+            ABall* NearestBall = nullptr;
+
+            for (int32 i = 0; i < BallsList.Num(); i++)
+            {
+                if (!BallsList[i]->GetAttachParentActor() &&
+                    (!NearestBall ||
+                        FVector::Distance(AIController->GetPawn()->GetActorLocation(), BallsList[i]->GetActorLocation()) <
+                        FVector::Distance(AIController->GetPawn()->GetActorLocation(), NearestBall->GetActorLocation())))
+                {
+                    NearestBall = BallsList[i];
+                }
+            }
+
+            BlackboardComponent->SetValueAsObject(BestBallKey, NearestBall);
+        },
+        nullptr,
+        [this](AAIController* AIController, const float DeltaTime) -> TSharedPtr<FAivState> {
+            AActor* BestBall = Cast<AActor>(BlackboardComponent->GetValueAsObject(BestBallKey));
+
+            if (BestBall)
+            {
+                return GoToBall;
+            }
+            else {
+                return StopMove;
+            }
+        }
+    );
+
+    GoToBall = MakeShared<FAivState>(
+        [this](AAIController* AIController) {
+        
+            AActor* BestBall = Cast<AActor>(BlackboardComponent->GetValueAsObject(BestBallKey));
+
+            AIController->MoveToActor(BestBall, 100.0f);
+        },
+        nullptr,
+        [this](AAIController* AIController, const float DeltaTime) -> TSharedPtr<FAivState> {
+            AActor* BestBall = Cast<AActor>(BlackboardComponent->GetValueAsObject(BestBallKey));
+
+            EPathFollowingStatus::Type State = AIController->GetMoveStatus();
+
+            if (State == EPathFollowingStatus::Moving)
+            {
+                if (BestBall && BestBall->GetAttachParentActor())
+                {
+                    return StopMove;
+                }
+
+                return nullptr;
+            }
+            return GrabBall;
+        }
+    );
+
+    StopMove = MakeShared<FAivState>(
+        [this](AAIController* AIController)
+        {
+            AIController->StopMovement();
+        },
+        nullptr,
+        [this](AAIController* AIController, const float DeltaTime) -> TSharedPtr<FAivState> {
+            return SearchForBall;
+        }
+    );
+
+    GrabBall = MakeShared<FAivState>(
+        [this](AAIController* AIController)
+        {
+            AActor* BestBall = Cast<AActor>(BlackboardComponent->GetValueAsObject(BestBallKey));
+
+            if (BestBall && BestBall->GetAttachParentActor())
+            {
+                BestBall = nullptr;
+                
+            }
+        },
+        nullptr,
+        [this](AAIController* AIController, const float DeltaTime) -> TSharedPtr<FAivState> {
+            AActor* BestBall = Cast<AActor>(BlackboardComponent->GetValueAsObject(BestBallKey));
+
+            if (!BestBall)
+            {
+                return SearchForBall;
+            }
+
+            BestBall->AttachToActor(AIController->GetPawn(), FAttachmentTransformRules::KeepRelativeTransform);
+            BestBall->SetActorRelativeLocation(FVector(0, 0, 0));
+
+            return GoToPlayer;
+        }
+    );
+
+    CurrentState = SearchForBall;
+    CurrentState->CallEnter(this);
+}
+
+void AEnemyAIController::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    if (CurrentState)
+    {
+        CurrentState = CurrentState->CallTick(this, DeltaTime);
+    }
+}
+
+
+SCRIPT GAMEMODE
+
+
+AABallsGameGameMode::AABallsGameGameMode()
+{
+	// set default pawn class to our Blueprinted character
+	PrimaryActorTick.bCanEverTick = true;
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
+	if (PlayerPawnBPClass.Class != NULL)
+	{
+		DefaultPawnClass = PlayerPawnBPClass.Class;
+	}
+}
+
+void AABallsGameGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	ResetMatch();
+}
+
+void AABallsGameGameMode::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	for (int32 i = 0; i < GameBalls.Num(); i++)
+	{
+		if (GameBalls[i]->GetAttachParentActor() != GetWorld()->GetFirstPlayerController()->GetPawn())
+		{
+			return;
+		}
+	}
+
+	for (int32 i = 0; i < GameBalls.Num(); i++)
+	{
+		if (GameBalls[i]->GetAttachParentActor() == GetWorld()->GetFirstPlayerController()->GetPawn())
+		{
+			GameBalls[i]->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		}
+	}
+
+	ResetMatch();
+}
+
+const TArray<class ABall*>& AABallsGameGameMode::GetBalls() const
+{
+	return GameBalls;
+}
+
+void AABallsGameGameMode::ResetMatch()
+{
+
+	TargetPoints.Empty();
+	GameBalls.Empty();
+
+	for (TActorIterator<ATargetPoint> It(GetWorld()); It; ++It)
+	{
+		TargetPoints.Add(*It);
+	}
+
+	for (TActorIterator<ABall> It(GetWorld()); It; ++It)
+	{
+		if (It->GetAttachParentActor())
+		{
+			It->AttachToActor(nullptr, FAttachmentTransformRules::KeepWorldTransform);
+		}
+
+		GameBalls.Add(*It);
+	}
+
+	//TArray<ATargetPoint*> RandomTargetPoints = TargetPoints;
+
+	for (int32 i = 0; i < GameBalls.Num(); i++)
+	{
+		
+		const int32 RandomTargetIndex = FMath::RandRange(0, TargetPoints.Num() - 1);
+		GameBalls[i]->SetActorLocation(TargetPoints[RandomTargetIndex]->GetActorLocation());
+		TargetPoints.RemoveAt(RandomTargetIndex);
+	}
+
+}
+            </code></pre>
+        </div>
+    </div>
 </div>
+</div>
+
+    </div>
 
 <!-- BLUEPRINT MARIO -->
 <div class="card school">
     <div class="card-header">
         <h3>Mario-like Platformer (Blueprint)</h3>
         <div>
-            <span class="tag unreal-cpp">C++</span>
+            <span class="tag blueprint">Blueprint</span>
             <span class="tag unreal">Unreal</span>
         </div>
     </div>
 
     <div class="media">
-        <img src="media/mario_gameplay1.gif">
-        <img src="media/mario_gameplay2.gif">
-        <img src="media/mario_blueprint.png">
+        <img src="media/SuperMario.gif">
+        <img src="media/SuperMario2.gif">
+        <img src="media/SuperMario3.gif">
     </div>
 
     <p class="description">
