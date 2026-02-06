@@ -431,3 +431,56 @@ footer {
     aspect-ratio: 16 / 9;
     border-radius: 10px;
 }
+@media (max-width: 600px) {
+    .hero {
+        padding: 35px 15px;
+    }
+
+    .hero h1 {
+        font-size: 1.9rem;
+    }
+
+    .hero p {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 600px) {
+    p {
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    .project-summary {
+        font-style: normal;
+    }
+}
+
+@media (max-width: 600px) {
+    .media img,
+    .media video {
+        margin-bottom: 12px;
+    }
+
+    .video-card {
+        margin-bottom: 25px;
+    }
+}
+
+@media (max-width: 600px) {
+    .toggle {
+        padding: 12px 18px;
+        font-size: 0.95rem;
+    }
+
+    .sub-toggle {
+        width: 100%;
+        text-align: left;
+    }
+}
+
+@media (max-width: 600px) {
+    .media img:nth-child(n+2) {
+        display: none;
+    }
+}
