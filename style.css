@@ -31,7 +31,42 @@ body {
     margin: auto;
     padding: 30px 20px;
 }
+.jam-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
 
+.jam-card {
+    background: #111827;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.jam-images {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.jam-images img {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.jam-link {
+    display: inline-block;
+    margin-top: 10px;
+    text-decoration: none;
+    color: #60a5fa;
+    font-weight: 600;
+}
+
+.contacts {
+    text-align: center;
+}
 h2 {
     margin-bottom: 20px;
     border-bottom: 2px solid #374151;
@@ -365,4 +400,34 @@ footer {
     text-align: center;
     font-size: 0.85rem;
     opacity: 0.8;
+}
+
+.video-card {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    color: #eaeaea;
+    margin-bottom: 15px;
+}
+
+.video-card img {
+    width: 100%;
+    border-radius: 10px;
+    display: block;
+}
+
+.video-card span {
+    display: block;
+    margin-top: 6px;
+    opacity: 0.85;
+}
+
+.video-embed {
+    margin: 15px 0;
+}
+
+.video-embed iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
 }
