@@ -330,3 +330,39 @@ footer {
     background: linear-gradient(135deg, #7c3aed, #4f46e5);
     color: white;
 }
+
+.pdf-wrapper {
+    margin: 25px 0;                 /* spazio sopra e sotto */
+    display: flex;
+    justify-content: center;        /* CENTRA */
+}
+
+.pdf-card {
+    max-width: 280px;
+    text-align: center;
+}
+.pdf-card {
+    display: inline-block;
+    max-width: 300px;
+    text-decoration: none;
+    color: #eaeaea;
+}
+
+.pdf-card img {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #374151;
+    transition: transform 0.2s ease;
+}
+
+.pdf-card:hover img {
+    transform: scale(1.02);
+}
+
+.pdf-card span {
+    display: block;
+    margin-top: 8px;
+    text-align: center;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
