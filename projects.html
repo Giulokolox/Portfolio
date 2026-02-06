@@ -10,8 +10,8 @@
 <body>
 
 <header class="hero">
-    <h1>Nome Cognome</h1>
-    <p>Game Programmer • Unity & Unreal Engine</p>
+    <h1>Personal Projects</h1>
+    <p>Unity • Unreal Engine • C Projects</p>
 </header>
 
 <main class="container">
@@ -38,7 +38,7 @@
 <!-- ZOMBIE APOCALYPSE -->
 <div class="card">
     <div class="card-header">
-        <h3>ZombieApocalypse</h3>
+        <h3>Zombie Apocalypse</h3>
          <div>
              <span class="tag csharp">C#</span>
              <span class="tag unity">Unity</span>
@@ -46,12 +46,21 @@
     </div>
 
     <p class="project-summary">
-        FPS game focused on gameplay systems, enemies and player mechanics.
+        A video game created at school by classmates. It's a wave-based FPS where zombies appear in each wave, 
+        and you have to defeat them with the various weapons available, progressing and unlocking areas until you reach the final area. 
+        In the final area, there's a helicopter where you'll have to earn the money needed to escape.
     </p>
 
+    <a href="https://www.youtube.com/watch?v=NfVFXz8Tj8A"
+        target="_blank"
+        class="video-card">
+        Click here to see the full gameplay video.
+    </a>
+    
     <div class="media">
         <img src="media/ZombieApocalypse.gif">
     </div>
+
 
     <button class="toggle" onclick="toggleProject(this)">
        Open Project
@@ -71,7 +80,7 @@
             <img src="media/Player.png" class="inline-media">
 
             <p class="description">
-                Player movement and input handling system.
+                The player script, with its necessary functionality.
             </p>
 
             <button
@@ -1091,7 +1100,7 @@ public class PlayerController : MonoBehaviour
             <img src="media/EnemyAI.png" class="inline-media">
 
             <p class="description">
-                Enemy AI Movemnt 
+                The Enemy AI script, with its necessary features.
             </p>
 
             <button
@@ -1496,7 +1505,7 @@ public class EnemyIA : MonoBehaviour
             <img src="media/ZombieApocalypse2.gif" class="inline-media">
 
             <p class="description">
-                Spawner Enemy
+                The enemy zombie spawner, which updates with additional spawners as new areas are unlocked.
             </p>
 
             <button
@@ -1739,7 +1748,7 @@ public class EnemySpawner : MonoBehaviour
             <img src="media/Collectable.png" class="inline-media">
 
             <p class="description">
-               Collectable
+               Collectibles that are dropped by enemies when they are killed.
             </p>
 
             <button
@@ -1844,7 +1853,11 @@ public class Collectable : MonoBehaviour
             <img src="media/ZombieApocalypse3.gif" class="inline-media">
 
             <p class="description">
-                Power Up
+                Power-ups are divided into different types:
+                - Invisible;
+                - Invincible;
+                - MiniGun, which gives you a minigun;
+                - Converter, which converts a zombie into an ally.
             </p>
 
             <button
@@ -1938,7 +1951,7 @@ public class RandomUP : MonoBehaviour
             <button
                 class="toggle"
                 onclick="toggleCode(this)">
-                Show Code
+                It's a boss that appears once every so many rounds.
             </button>
 
             <div class="code-box">
@@ -2180,14 +2193,27 @@ public class MazeGenerator : MonoBehaviour
     <div class="card-header">
         <h3>Main Unreal Project (WIP)</h3>
         <div>
-            <span class="tag unreal-cpp">C++</span>
+            <span class="tag cpp">C++</span>
             <span class="tag unreal">Unreal</span>
         </div>
     </div>
 
     <p class="project-summary">
-        Personal Unreal project focused on advanced gameplay systems. Code will be released later.
+        This project is called "Divinity Survivors", a game that takes inspiration mainly from "Vampire Survivors", a game that has been a lot of talk in recent years
+        , creating a real subgenre of rogue-like. The game is made up of various rounds up to 45 rounds of one minute each, in which there are four starting players and
+         8 different weapons. Each character has their own personal stats and there is a shop where you can buy different items that will make each game different from 
+         the others. In total there are more than 250 items that you can buy in the shop. The bosses present in the game are inspired by three deities, which are "Njord",
+          "Freya" and "Hel". For now I will only show a few videos of the gameplay.
+         As soon as everything is ready and tested, I will publish it on Itch.io and I will show the code, made 99% with C++ and 1% blueprints.
     </p>
+
+    <div class="media">
+        <img src="media/DivinitySurvivors.png">
+        <img src="media/Divinity Survivors.gif">
+        <img src="media/Divinity Survivors2.gif">
+        <img src="media/Divinity Survivors3.gif">
+    </div>
+
 
     <div class="media">
         <video src="media/unreal_main.mp4" autoplay muted loop></video>
@@ -2207,7 +2233,7 @@ public class MazeGenerator : MonoBehaviour
     </div>
 
      <p class="project-summary">
-       Enemy AI
+       Enemy AI and change state all done in c++.
     </p>
 
     <div class="media">
@@ -2508,7 +2534,8 @@ void AABallsGameGameMode::ResetMatch()
     </div>
 
     <p class="description">
-        Jump-on-enemies mechanic implemented with Blueprint.
+        Simply a project made entirely with blueprints featuring Super Mario mechanics. 
+        There's not much to say, the videos show it all.
     </p>
 </div>
 
@@ -3251,9 +3278,9 @@ int main(int argc, char **argv, char **environ)
 <!-- ================= CONTACTS ================= -->
 <section>
     <h2>Contacts</h2>
-    <p>Email: tuoemail@email.com</p>
-    <p>GitHub: github.com/tuonome</p>
-    <p>LinkedIn: linkedin.com/in/tuonome</p>
+    <p>Email: giulianokola02@gmail.com</p>
+    <p>GitHub: https://github.com/Giulokolox</p>
+    <p>LinkedIn: https://www.linkedin.com/in/giuliano-kola-345891216/</p>
 </section>
 
 </main>
